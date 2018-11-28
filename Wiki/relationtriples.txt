@@ -1,0 +1,9 @@
+<"http://en.wikipedia.org/wiki/Benjamin_Biolay","brother","Coralie Clément">
+<"http://en.wikipedia.org/wiki/Catherine_Deneuve","sister","Sylvie Dorléac">
+<"http://en.wikipedia.org/wiki/Chiara_Mastroianni","ex-boyfriend","Pierre Thoretton">
+<"http://en.wikipedia.org/wiki/Chiara_Mastroianni","marriage","http://en.wikipedia.org/wiki/Benjamin_Biolay">
+<"http://en.wikipedia.org/wiki/David_Bailey","wife","Sharon">
+<"http://en.wikipedia.org/wiki/David_Bailey","wife","Catherine Bailey">
+<"http://en.wikipedia.org/wiki/David_Bailey","brother","Tom">
+<"http://en.wikipedia.org/wiki/Didier_Pironi","marriage","Catherine Beynie">
+<"http://en.wikipedia.org/wiki/Didier_Pironi","sister","Ferrari">

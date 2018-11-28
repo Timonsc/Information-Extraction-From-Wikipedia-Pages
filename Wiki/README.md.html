@@ -1,0 +1,156 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Untitled Document.md</title><script type="text/javascript">
+//<![CDATA[
+window.__cfRocketOptions = {byc:0,p:0,petok:"9b41fc6c5a84e53d50887ccb5abeed3a1359f480-1521296064-1800"};
+//]]>
+</script>
+<script type="text/javascript" src="https://ajax.cloudflare.com/cdn-cgi/scripts/935cb224/cloudflare-static/rocket.min.js"></script>
+<style></style></head><body id="preview">
+<h1><a id="Information_Extraction_From_Wikipedia_Pages_0"></a>Information Extraction From Wikipedia Pages</h1>
+<p>Guo Lei &amp; Timon Schneider<br>
+16-02-2018</p>
+<h1><a id="Getting_Started_4"></a>Getting Started</h1>
+<p>These instructions will get you a copy of the project up and running on your local machine for testing purposes.</p>
+<h4><a id="Prerequisites_7"></a>Prerequisites</h4>
+<p>We developed the program in Python 3.6.4. Apart from the standard Python library we used the Natural Language Toolkit 3.2.5 and the datefinder library. Use the following commands to install the libraries.</p>
+<pre><code>$ pip3 install nltk
+$ pip3 install datefinder
+</code></pre>
+<p>Within the Python environment use the following commands to download the needed packages.</p>
+<pre><code class="language-python">nltk.download(<span class="hljs-string">'punkt'</span>)
+nltk.download(<span class="hljs-string">'averaged_perceptron_tagger'</span>)
+nltk.download(<span class="hljs-string">'maxent_ne_chunker'</span>)
+nltk.download(<span class="hljs-string">'wordnet'</span>)
+nltk.download(<span class="hljs-string">'words'</span>)
+</code></pre>
+<h4><a id="How_to_run_22"></a>How to run</h4>
+<p>Navigate to folder of <a href="http://wiki.py">wiki.py</a>. Note: we only tested the program in Ubuntu and MacOS.</p>
+<pre><code>$ python3 wiki.py entity_list.txt [location of the Wikipedia files]
+</code></pre>
+<h2><a id="Description_30"></a>Description</h2>
+<p>In this code we made our goal to write a compact piece of code that would work for any other Wikipedia files. To secure this goal we made tried to keep the amount of exceptions to an absolute minimum. Meaning that in no cases we used exceptional lines of code for one single, or even a few, cases that gave a result other than what we aimed for. This lead to very sophisticated and compact algorithms that will make some, although very little, mistakes.</p>
+<h1><a id="File_description_33"></a>File description</h1>
+<p>Brief description of the documents in the file:</p>
+<ul>
+<li>[entity_list.txt] - List of entity url</li>
+<li>[newText-~~~.txt] - The annotated version of the wikipedia text.</li>
+<li>[dateTriples.txt] - Birthdate triple of entity</li>
+<li>[typeTriples.txt] - Type triple of entity</li>
+<li>[relationtriples.txt] - Recognized relations between entities.</li>
+</ul>
+<h3><a id="Code_architecture_41"></a>Code architecture</h3>
+<ul>
+<li>In <strong>def main()</strong> we get the input parameters, open the files that we will use to store the triples and the annotated text and extract the subject of the Wikipedia file from the file name. From here we pass on the necessary variables and run the functions. Some only once, others in a for loop for every file in the Wikipedia_corpus folder.</li>
+<li>
+<ul>
+<li><strong>def analyzeEntities()</strong> extracts the entity names in all necessary data structures.</li>
+</ul>
+</li>
+<li>
+<ul>
+<li><strong>def createAnnotations()</strong> contains an algorithm to annotate the text and other functions that have to be executed for every file.</li>
+</ul>
+</li>
+<li>
+<ul>
+<li>
+<ul>
+<li><strong>def relationFinder()</strong> finds relations between the different entities and the types of the entity of the Wikipedia page and creates the type triple and relation triple.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<ul>
+<li>
+<ul>
+<li><strong>def bornDateFinder()</strong> finds the most relevant date for the entity and creates the date triple.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2><a id="1_Anotate_the_entity_names_in_the_Wikipedia_text_files_49"></a>1. Anotate the entity names in the Wikipedia text files.</h2>
+<p>We wanted to replace single name parts (e.g. Deneuve) and complete names (Catherine Deneuve). We chose to create two dictionaries, one with the full names as key and the uri as values and one with the name parts as key and the uri as value. Also we created an array in an array with all the name parts for evey entity ([[“Catherine”,“Deneuve”],[“David”,“Bailey”], etc.]).</p>
+<h4><a id="Extract_names_from_the_uris_52"></a>Extract names from the uri’s</h4>
+<p>We use split strip and replace to extract the names from the url.<br>
+Create two dictionaries and two arrays.</p>
+<p>‘’’<br>
+allNames = [“Catherine Deneuve”,“David Bailey” etc.]<br>
+allNameParts = [[“Catherine”,“Deneuve”],[“David”,“Bailey”], etc.]<br>
+nameUrl = {“Catherine Deneuve”: &quot;<a href="https://en.wikipedia.org/wiki/Catherine_Deneuve">http://en.wikipedia.org/wiki/Catherine_Deneuve</a>&quot;, etc.}<br>
+namePartsUrl = {“Catherine”: &quot;<a href="https://en.wikipedia.org/wiki/Catherine_Deneuve">http://en.wikipedia.org/wiki/Catherine_Deneuve</a>&quot;, “Deneuve”: &quot;<a href="https://en.wikipedia.org/wiki/Catherine_Deneuve">http://en.wikipedia.org/wiki/Catherine_Deneuve</a>&quot;, etc.}<br>
+‘’’</p>
+<h4><a id="Create_the_annotations_62"></a>Create the annotations</h4>
+<p>We use the dictionaries to match the names with the uri’s. We use the arrays match the last name first and then see whether in that case if there are also prenames before the surname. Like this we prevent that double annotations occur for one name.</p>
+<pre><code>word_tokenize(): # Is used to transform the text into an array of single words.
+</code></pre>
+<p>We match all words in the array with the last names in the <strong>allNameParts</strong> array. Then we check if there are also first names and replace everything with the annotation using one of the dictionaries.<br>
+To prevent matching entities with the same surname, we only annotate single surnames if it is the same as the surname of the subject of the Wikipedia file. This still doesn’t prevent wrongly matching family members of the subject with a different first name with the subject though. It does help preventing matching unrelated entities in other files.<br>
+Then we match “he” and “she” with the words in the array. We create the annotations with the last entity found in the text before the match. We assumed that he and she will only be used for talking about the subject entity. If this wouldn’d be the case the algorithm would look for the last entity that is unrelated. In practice this method gives a very high accuracy.</p>
+<h4><a id="Shortcomings_71"></a>Shortcomings</h4>
+<ul>
+<li>Since we tokenized the text we have to put the text back together. To do this we <strong>MosesDetokenizer()</strong> from the nltk library. Some of the layout was lost and there were some mistakes with whitespaces.</li>
+<li>The algorithm assumes that the wikipedia files do not contain different entities than the subject with the same last name. It will recognize the last name and replace it for a entity of the subject. If the entity list would contain these family members the accuracy of the algorithm would improve.</li>
+<li>We assume the Wikipedia text only speaks in terms of he and she about the subject.</li>
+</ul>
+<h2><a id="2_Find_the_most_important_date_for_the_subject_entity_77"></a>2. Find the most important date for the subject entity</h2>
+<pre><code>datefinder(): is usded for finding the dates
+</code></pre>
+<p>Born date always appeared at the first date, we just used datefinder to find all the dates and then if the length of the vector is more than one, then we return the first date to be the born date. In the cases of the cities the datefinder only returns the year in which the city is created. This made the datefinder return the month and day of today. To prevent this we check if the returned month and day is the same as the month and day of today. If so, we only return the year.</p>
+<h4><a id="Shortcomings_82"></a>Shortcomings</h4>
+<ul>
+<li>If we run the algorithm on the same day of the birth date of one of the person entities, it will return only the year. This could be easily be prevented by building in a boolean of foundDayAndMonth.</li>
+</ul>
+<h2><a id="3_Extract_the_type_of_the_subject_entity_86"></a>3. Extract the type of the subject entity</h2>
+<p>We assumed that the type of the subject will always be in one if the first three sentences. For the files given in this exercise this gave an very high accuracy. In these three sentences match with the words “is” and “was”. Then we analyze the following words with NLTK:</p>
+<pre><code>sentence_words = nltk.word_tokenize(sentence) # Creates an array of the words
+sentence_words_tagged = nltk.pos_tag(sentence_words) # Tags the words with the type.
+</code></pre>
+<p>After the matches we want to get the store the words with the following types: NN, NNP, VBG, JJ and CC (respectively nouns, verbs, adjectives and coordinating conjunctions). We keep storing those until we find an IN or WP (Preposition or subordinating conjunction or Wh-pronoun) or until the sentence ends. Then per sentence we put them together as one type. This gave us very good results. We can imagine though, that with other texts we might have to take more word types into account make sure the algorithms keeps giving clean results.<br>
+This algorithm recognizes what words should be put together as one type and what words should become their own type.</p>
+<pre><code># From &quot;Benjamin Biolay is a French singer, songwriter, musician, actor and record producer&quot; it creates the following types.
+&lt;&quot;http://en.wikipedia.org/wiki/Benjamin_Biolay&quot;,&quot;type&quot;,&quot;French singer&quot;&gt;
+&lt;&quot;http://en.wikipedia.org/wiki/Benjamin_Biolay&quot;,&quot;type&quot;,&quot;songwriter&quot;&gt;
+&lt;&quot;http://en.wikipedia.org/wiki/Benjamin_Biolay&quot;,&quot;type&quot;,&quot;musician&quot;&gt;
+&lt;&quot;http://en.wikipedia.org/wiki/Benjamin_Biolay&quot;,&quot;type&quot;,&quot;actor&quot;&gt;
+&lt;&quot;http://en.wikipedia.org/wiki/Benjamin_Biolay&quot;,&quot;type&quot;,&quot;record producer&quot;&gt;
+
+# For Catherine Deneuve it recognizes the types perfectly.
+&lt;&quot;http://en.wikipedia.org/wiki/Catherine_Deneuve&quot;,&quot;type&quot;,&quot;French actress&quot;&gt;
+&lt;&quot;http://en.wikipedia.org/wiki/Catherine_Deneuve&quot;,&quot;type&quot;,&quot;twelve-time Cesar Award nominee&quot;&gt;
+</code></pre>
+<h4><a id="Shortcomings_106"></a>Shortcomings</h4>
+<ul>
+<li>The algorithm that splits the types is not perfect. For example it splits English fashion and portrait photographer into two types; “English fashion” and “portraint photographer”.</li>
+<li>Not all word types are considered. More general rules about linguistics could perfectionize the algorithm.</li>
+</ul>
+<h2><a id="4_Find_relations_110"></a>4. Find relations</h2>
+<p>In this part look for relations between entities, listed in the entity list or not. If it is listed in the entity list, we put the uri in the triple, otherwise we put the matched word/name in the uri. Our method is based upon the following assumptions that gave us quite good results.</p>
+<ul>
+<li>All relations between entities that wil find will be between the subject of the file and another entity of which the subject will appear first.</li>
+<li>All relations that we find will be in the same sentence.<br>
+This is how the algorithm works:</li>
+</ul>
+<ol>
+<li>Split the text up in sentences and split the sentences up in tokenized words ([word],[wordtype])</li>
+<li>Look in the sentence array for words of the type NNP or “relation words” listed in the predefined relations array and put them alltogether in a new array <strong>matched_names_array</strong>. If multiple NNP’s are sequential put them together in one cell.</li>
+<li>Then in another loop, find the match the “relation words” in the <strong>matched_names_array</strong> with the following NNP in that array.</li>
+<li>Create a triple from those items.</li>
+</ol>
+<pre><code># The predefined &quot;relation words&quot;
+relations=[&quot;marriage&quot;,&quot;ex-boyfriend&quot;,&quot;ex-girlfriend&quot;,&quot;sister&quot;,&quot;brother&quot;,&quot;husband&quot;,&quot;wife&quot;,&quot;married&quot;]
+</code></pre>
+<h3><a id="Shortcomings_124"></a>Shortcomings</h3>
+<ul>
+<li>The results that this algorithm gives are quite accurate. Though, with the assumptions that we made we might have missed some relations.</li>
+<li>The algorithm has some problems with synomyms. In the Didier Pironi file it mathes “Didier Pironi” and “sister” with “Ferrari” because Didiers teammate drove for the sister team Ferrari.</li>
+</ul>
+<h2><a id="Conclusion_128"></a>Conclusion</h2>
+<p>We tried to solve the exercises with a very compact and sohpisticated code. Thinking about what piece of code would work for every scenario was most time consuming, much more than actually writing the code, but also very interesting. With minimum exceptions and adaptions to the Wikipedia test files we got very good results.</p>
+<h3><a id="Author_131"></a>Author</h3>
+<ul>
+<li>Timon Schneider</li>
+<li>Guo Lei</li>
+</ul>
+
+</body></html>
